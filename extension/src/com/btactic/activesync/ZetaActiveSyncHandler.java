@@ -16,6 +16,16 @@
  */
 package com.btactic.activesync;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.zimbra.common.util.ZimbraLog;
+
+import com.zimbra.cs.extension.ExtensionHttpHandler;
+
 /**
  *
  */
