@@ -16,6 +16,8 @@
  */
 package com.btactic.activesync;
 
+import com.zimbra.common.service.ServiceException;
+import com.zimbra.cs.extension.ExtensionDispatcherServlet;
 import com.zimbra.cs.extension.ZimbraExtension;
 
 /**
@@ -29,20 +31,22 @@ public class ZetaActiveSyncExtension implements ZimbraExtension {
      * @return extension name
      */
     public String getName() {
-        return "zimbrasync";
+        return "zetaactivesync";
     }
 
     /**
      * Initializes the extension. Called when the extension is loaded.
      *
+     * @throws com.zimbra.common.service.ServiceException
      */
-    public void init() {
-        // TODO: Handle request directly and not thanks to SoapServlet
+    public void init() throws ServiceException {
+        ExtensionDispatcherServlet.register(this, new ZetaActiveSyncHandler());
     }
 
     /**
      * Terminates the extension. Called when the server is shut down.
      */
     public void destroy() {
+        ExtensionDispatcherServlet.unregister(this);
     }
 }
