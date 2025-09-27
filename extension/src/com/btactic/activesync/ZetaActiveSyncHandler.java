@@ -30,6 +30,8 @@ public class ZetaActiveSyncHandler extends ExtensionHttpHandler {
      */
     @Override
     public String getPath() {
+        // /opt/zimbra/jetty_base/jetty/etc/jetty.xml.in maps '/Microsoft-Server-ActiveSync/*' to '/service/extension/zimbrasync'.
+        // Let's use /zimbrasync here to avoid having to rewrite nginx configuration files and jetty.xml.in
         return "/zimbrasync";
     }
 
