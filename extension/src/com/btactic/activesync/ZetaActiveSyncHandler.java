@@ -46,6 +46,16 @@ public class ZetaActiveSyncHandler extends ExtensionHttpHandler {
     }
 
     /**
+    * Common initialization for ActiveSync requests.
+    * Ported from Z-Push index.php top lines.
+    */
+    private void initRequest(HttpServletRequest req, HttpServletResponse resp) {
+        // ob_start(null, 1048576); -> Not needed in Java (servlet buffering is automatic)
+        // ignore_user_abort(true); -> Not needed, Java handles socket disconnects with exceptions
+        // require_once 'vendor/autoload.php'; -> Not needed, Java uses imports
+    }
+
+    /**
      * Processes HTTP GET requests.
      *
      * @param req  request message
@@ -55,6 +65,7 @@ public class ZetaActiveSyncHandler extends ExtensionHttpHandler {
      */
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        initRequest(req, resp);
         //Set the content type and charset for the response to the client.
         resp.setHeader("Content-Type", "text/html;charset=UTF-8");
 
