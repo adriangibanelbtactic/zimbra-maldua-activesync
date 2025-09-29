@@ -53,6 +53,14 @@ public class ZetaActiveSyncHandler extends ExtensionHttpHandler {
         // ob_start(null, 1048576); -> Not needed in Java (servlet buffering is automatic)
         // ignore_user_abort(true); -> Not needed, Java handles socket disconnects with exceptions
         // require_once 'vendor/autoload.php'; -> Not needed, Java uses imports
+
+        // Attempt to set maximum execution time
+        // PHP functions ini_set() and set_time_limit() do not have a direct Java equivalent
+        // In Java, server/container usually controls timeouts
+        // Keeping as comment for reference
+        // ini_set('max_execution_time', Config.SCRIPT_TIMEOUT);
+        // set_time_limit(Config.SCRIPT_TIMEOUT);
+
     }
 
     /**
