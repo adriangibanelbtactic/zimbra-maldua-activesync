@@ -29,7 +29,6 @@ import java.util.logging.Logger;
 public class ZPush {
     private static final Logger logger = Logger.getLogger(ZPush.class.getName());
 
-    // Constants
     public static final int UNAUTHENTICATED = 1;
     public static final int UNPROVISIONED = 2;
     public static final int NOACTIVESYNCCOMMAND = 3;
@@ -54,7 +53,7 @@ public class ZPush {
     public static final String ASV_16 = "16.0";
     public static final String ASV_161 = "16.1";
 
-    // Command codes
+    // Command codes for base64 encoded requests (AS >= 12.1)
     public static final int COMMAND_SYNC = 0;
     public static final int COMMAND_SENDMAIL = 1;
     public static final int COMMAND_SMARTFORWARD = 2;
@@ -76,26 +75,29 @@ public class ZPush {
     public static final int COMMAND_VALIDATECERT = 22;
     public static final int COMMAND_FIND = 23;
 
-    // Deprecated
+    // Deprecated commands
     public static final int COMMAND_GETHIERARCHY = -1;
     public static final int COMMAND_CREATECOLLECTION = -2;
     public static final int COMMAND_DELETECOLLECTION = -3;
     public static final int COMMAND_MOVECOLLECTION = -4;
     public static final int COMMAND_NOTIFY = -5;
 
-    // Webservice
+    // Webservice commands
     public static final int COMMAND_WEBSERVICE_DEVICE = -100;
     public static final int COMMAND_WEBSERVICE_USERS = -101;
     public static final int COMMAND_WEBSERVICE_INFO = -102;
 
-    // Latest supported state version (stub)
-    public static final int STATE_VERSION = 2;
+    // TODO: Recreate IStateMachine file.
+    // Latest supported State version
+    // const STATE_VERSION = IStateMachine::STATEVERSION_02;
+    // public static final int STATE_VERSION = 2;
 
     // Static fields
     private static List<String> autoloadBackendPreference = Arrays.asList(
             "BackendKopano", "BackendCombined", "BackendIMAP", "BackendVCardDir", "BackendMaildir"
     );
 
+    // Versions 1.0, 2.0, 2.1 and 2.5 are deprecated (ZP-604)
     private static List<String> supportedASVersions = Arrays.asList(
             ASV_12, ASV_121, ASV_14, ASV_141, ASV_16, ASV_161
     );
