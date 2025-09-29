@@ -1,7 +1,5 @@
 package com.btactic.activesync.zpush;
 
-import java.util.*;
-
 /***********************************************
 * File      :   Config.java
 * Project   :   Z-Push (Java Port)
