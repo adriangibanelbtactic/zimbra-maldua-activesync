@@ -128,24 +128,6 @@ public class ZPush {
         classes.put("Email", emailClass);
     }
 
-    // Example of a method
-    public static IStateMachine getStateMachine() throws FatalNotImplementedException, ServiceUnavailableException {
-        if (stateMachine == null) {
-            IStateMachine backendStateMachine = getBackend().getStateMachine();
-            if (backendStateMachine != null) {
-                stateMachine = backendStateMachine;
-            } else {
-                stateMachine = new FileStateMachine();
-            }
-
-            if (stateMachine.getStateVersion() != getLatestStateVersion()) {
-                if (TopCollector.exists()) getTopCollector().announceInformation("Run migration script!", true);
-                throw new ServiceUnavailableException("The state version is not the latest version.");
-            }
-        }
-        return stateMachine;
-    }
-
     public static int getLatestStateVersion() {
         return STATE_VERSION;
     }
@@ -312,11 +294,17 @@ class FileStateMachine implements IStateMachine {
     // Returns the StateMachine object (lazy initialization)
     public static IStateMachine getStateMachine() throws FatalNotImplementedException, ServiceUnavailableException, FatalMisconfigurationException {
         if (stateMachine == null) {
+            // the backend could also return an own IStateMachine implementation
             IBackend backendInstance = getBackend();
             IStateMachine backendSM = backendInstance.getStateMachine();
 
             if (backendSM != null) {
-                stateMachine = backendSM;
+                logger.debug("Backend implementation of IStateMachine: " + backendSM.getClass().getName());
+                if (backendSM instanceof IStateMachine) {
+                    stateMachine = backendSM;
+                } else {
+                    throw new FatalNotImplementedException("State machine returned by the backend does not implement the IStateMachine interface!");
+                }
             } else {
                 // Default state machine (File or SQL)
                 if ("SQL".equals(STATE_MACHINE)) {
@@ -327,11 +315,16 @@ class FileStateMachine implements IStateMachine {
             }
 
             // Version validation
-            if (stateMachine.getStateVersion() != STATE_VERSION) {
-                if (TopCollector.exists()) {
-                    getTopCollector().announceInformation("Run migration script!", true);
-                }
-                throw new ServiceUnavailableException("The state version is not the latest version. Run the state upgrade script.");
+            if (stateMachine.getStateVersion() != getLatestStateVersion()) {
+                // I guess this is related to php autoload and can be ignored in Java
+                // if (TopCollector.exists()) {
+                getTopCollector().announceInformation("Run migration script!", true);
+                throw new ServiceUnavailableException(
+                    String.format(
+                        "The state version available to the %s is not the latest version - please run the state upgrade script. See release notes for more information.",
+                        stateMachine.getClass().getName()
+                    )
+                );
             }
         }
         return stateMachine;
