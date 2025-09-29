@@ -407,19 +407,19 @@ public class Config {
  *    connected devices will be updated and load the data contained in the
  *    added/modified folders.
  */
-    public static final AdditionalFolder[] ADDITIONAL_FOLDERS = new AdditionalFolder[] {
-        // demo entry for the synchronization of contacts from the public folder.
-        // uncomment and fill in the folderid if needed
-        /*
-        new AdditionalFolder(
-            "SYSTEM",          // store
-            "",                // folderid
-            "Public Contacts", // name
-            SyncFolderType.USER_CONTACT, // type
-            DeviceManager.FLD_FLAGS_NONE // flags
-        )
-        */
-    };
+    // public static final AdditionalFolder[] ADDITIONAL_FOLDERS = new AdditionalFolder[] {
+    //     // demo entry for the synchronization of contacts from the public folder.
+    //     // uncomment and fill in the folderid if needed
+    //     /*
+    //     new AdditionalFolder(
+    //         "SYSTEM",          // store
+    //         "",                // folderid
+    //         "Public Contacts", // name
+    //         SyncFolderType.USER_CONTACT, // type
+    //         DeviceManager.FLD_FLAGS_NONE // flags
+    //     )
+    //     */
+    // };
 
 /**********************************************************************************
  *  Iconv settings
