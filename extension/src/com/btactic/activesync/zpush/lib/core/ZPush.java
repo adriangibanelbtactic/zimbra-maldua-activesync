@@ -1,4 +1,4 @@
-package com.example.zpush;
+package com.btactic.activesync.zpush.lib.core;
 
 import java.util.*;
 import java.util.logging.Logger;
