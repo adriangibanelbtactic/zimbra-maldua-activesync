@@ -103,7 +103,7 @@ public class ZPush {
     );
 
     private static Map<Integer, ActiveSyncCommand> supportedCommands = new HashMap<>();
-    private static Map<String, Map<Integer, Object>> classes = new HashMap<>();
+    private static final Map<String, ActiveSyncClass> classes = new HashMap<>();
 
     private static IStateMachine stateMachine;
     private static ISearchProvider searchProvider;
@@ -198,13 +198,53 @@ public class ZPush {
         supportedCommands.put(COMMAND_WEBSERVICE_INFO,
             new ActiveSyncCommand(null, "Webservice", PLAININPUT, NOACTIVESYNCCOMMAND, WEBSERVICECOMMAND));
 
-        // Initialize classes (example for Email)
-        Map<Integer, Object> emailClass = new HashMap<>();
-        emailClass.put(CLASS_NAME, "SyncMail");
-        emailClass.put(CLASS_REQUIRESPROTOCOLVERSION, false);
-        emailClass.put(CLASS_DEFAULTTYPE, "Inbox");
-        emailClass.put(CLASS_OTHERTYPES, Arrays.asList("Other", "Drafts", "SentMail"));
-        classes.put("Email", emailClass);
+        classes.put("Email", new ActiveSyncClass(
+                "SyncMail",
+                false,
+                ZPushDefs.SYNC_FOLDER_TYPE_INBOX,
+                Arrays.asList(
+                        ZPushDefs.SYNC_FOLDER_TYPE_OTHER,
+                        ZPushDefs.SYNC_FOLDER_TYPE_DRAFTS,
+                        ZPushDefs.SYNC_FOLDER_TYPE_WASTEBASKET,
+                        ZPushDefs.SYNC_FOLDER_TYPE_SENTMAIL,
+                        ZPushDefs.SYNC_FOLDER_TYPE_OUTBOX,
+                        ZPushDefs.SYNC_FOLDER_TYPE_USER_MAIL,
+                        ZPushDefs.SYNC_FOLDER_TYPE_JOURNAL,
+                        ZPushDefs.SYNC_FOLDER_TYPE_USER_JOURNAL
+                )
+        ));
+
+        classes.put("Contacts", new ActiveSyncClass(
+                "SyncContact",
+                true,
+                ZPushDefs.SYNC_FOLDER_TYPE_CONTACT,
+                Arrays.asList(
+                        ZPushDefs.SYNC_FOLDER_TYPE_USER_CONTACT,
+                        ZPushDefs.SYNC_FOLDER_TYPE_UNKNOWN
+                )
+        ));
+
+        classes.put("Calendar", new ActiveSyncClass(
+                "SyncAppointment",
+                false,
+                ZPushDefs.SYNC_FOLDER_TYPE_APPOINTMENT,
+                Arrays.asList(ZPushDefs.SYNC_FOLDER_TYPE_USER_APPOINTMENT)
+        ));
+
+        classes.put("Tasks", new ActiveSyncClass(
+                "SyncTask",
+                false,
+                ZPushDefs.SYNC_FOLDER_TYPE_TASK,
+                Arrays.asList(ZPushDefs.SYNC_FOLDER_TYPE_USER_TASK)
+        ));
+
+        classes.put("Notes", new ActiveSyncClass(
+                "SyncNote",
+                false,
+                ZPushDefs.SYNC_FOLDER_TYPE_NOTE,
+                Arrays.asList(ZPushDefs.SYNC_FOLDER_TYPE_USER_NOTE)
+        ));
+
     }
 
     public static int getLatestStateVersion() {
@@ -545,18 +585,16 @@ class FileStateMachine implements IStateMachine {
             throw new FatalNotImplementedException("Class '" + folderClass + "' is not supported");
         }
 
-        String className = (String) classes.get(folderClass).get(CLASS_NAME);
-        boolean requiresProtocol = (boolean) classes.get(folderClass).get(CLASS_REQUIRESPROTOCOLVERSION);
-
+        ActiveSyncClass cls = classes.get(folderClass);
         try {
-            if (requiresProtocol) {
-                Constructor<?> ctor = Class.forName(className).getConstructor(int.class);
-                return ctor.newInstance(Request.getProtocolVersion());
+            Class<?> clazz = Class.forName(cls.getClassName());
+            if (cls.requiresProtocolVersion()) {
+                return clazz.getConstructor(int.class).newInstance(Request.getProtocolVersion());
             } else {
-                return Class.forName(className).getDeclaredConstructor().newInstance();
+                return clazz.getConstructor().newInstance();
             }
         } catch (Exception e) {
-            throw new FatalNotImplementedException("Could not instantiate class: " + e.getMessage());
+            throw new RuntimeException("Unable to instantiate class " + cls.getClassName(), e);
         }
     }
 
@@ -567,9 +605,9 @@ class FileStateMachine implements IStateMachine {
     * @return int
     */
     public static int getDefaultFolderTypeFromFolderClass(String folderClass) {
-        logger.fine(String.format("getDefaultFolderTypeFromFolderClass('%s') = %d",
-                folderClass, classes.get(folderClass).get(CLASS_DEFAULTTYPE)));
-        return (int) classes.get(folderClass).get(CLASS_DEFAULTTYPE);
+        ActiveSyncClass cls = classes.get(folderClass);
+        ZLog.writeDebug(String.format("ZPush::getDefaultFolderTypeFromFolderClass('%s'): '%d'", folderClass, cls.getDefaultType()));
+        return cls.getDefaultType();
     }
 
     /**
@@ -579,17 +617,15 @@ class FileStateMachine implements IStateMachine {
     * @return String (or null if not found)
     */
     public static String getFolderClassFromFolderType(int folderType) {
-        String result = null;
-        for (Map.Entry<String, Map<Integer, Object>> entry : classes.entrySet()) {
-            Map<Integer, Object> props = entry.getValue();
-            if ((int) props.get(CLASS_DEFAULTTYPE) == folderType ||
-                ((List<Integer>) props.get(CLASS_OTHERTYPES)).contains(folderType)) {
-                result = entry.getKey();
-                break;
+        for (Map.Entry<String, ActiveSyncClass> entry : classes.entrySet()) {
+            ActiveSyncClass cls = entry.getValue();
+            if (cls.getDefaultType() == folderType || cls.getOtherTypes().contains(folderType)) {
+                ZLog.writeDebug(String.format("ZPush::getFolderClassFromFolderType('%d'): %s", folderType, entry.getKey()));
+                return entry.getKey();
             }
         }
-        logger.fine(String.format("getFolderClassFromFolderType(%d) = %s", folderType, result));
-        return result;
+        ZLog.writeDebug(String.format("ZPush::getFolderClassFromFolderType('%d'): null", folderType));
+        return null;
     }
 
     /**
