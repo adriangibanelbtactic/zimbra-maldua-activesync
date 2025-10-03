@@ -20,6 +20,8 @@
  */
 package com.btactic.activesync.zpush.lib.core;
 
+import java.util.Set;
+
 public class ActiveSyncCommand {
     private final String asVersion;
     private final String requestHandler;
