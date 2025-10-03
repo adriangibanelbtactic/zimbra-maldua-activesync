@@ -102,7 +102,7 @@ public class ZPush {
             ASV_12, ASV_121, ASV_14, ASV_141, ASV_16, ASV_161
     );
 
-    private static Map<Integer, Map<Integer, Object>> supportedCommands = new HashMap<>();
+    private static Map<Integer, ActiveSyncCommand> supportedCommands = new HashMap<>();
     private static Map<String, Map<Integer, Object>> classes = new HashMap<>();
 
     private static IStateMachine stateMachine;
@@ -114,10 +114,89 @@ public class ZPush {
     private static Map<String, Object> policies;
 
     static {
-        // Initialize supportedCommands (example for COMMAND_SYNC)
-        Map<Integer, Object> syncCmd = new HashMap<>();
-        syncCmd.put(REQUESTHANDLER, "Sync");
-        supportedCommands.put(COMMAND_SYNC, syncCmd);
+        supportedCommands.put(COMMAND_SYNC,
+            new ActiveSyncCommand(ASV_1, "Sync"));
+
+        supportedCommands.put(COMMAND_SENDMAIL,
+            new ActiveSyncCommand(ASV_1, "SendMail"));
+
+        supportedCommands.put(COMMAND_SMARTFORWARD,
+            new ActiveSyncCommand(ASV_1, "SendMail"));
+
+        supportedCommands.put(COMMAND_SMARTREPLY,
+            new ActiveSyncCommand(ASV_1, "SendMail"));
+
+        supportedCommands.put(COMMAND_GETATTACHMENT,
+            new ActiveSyncCommand(ASV_1, "GetAttachment"));
+
+        supportedCommands.put(COMMAND_GETHIERARCHY,
+            new ActiveSyncCommand(ASV_1, "GetHierarchy", HIERARCHYCOMMAND));
+
+        supportedCommands.put(COMMAND_CREATECOLLECTION,
+            new ActiveSyncCommand(ASV_1, null));
+
+        supportedCommands.put(COMMAND_DELETECOLLECTION,
+            new ActiveSyncCommand(ASV_1, null));
+
+        supportedCommands.put(COMMAND_MOVECOLLECTION,
+            new ActiveSyncCommand(ASV_1, null));
+
+        supportedCommands.put(COMMAND_FOLDERSYNC,
+            new ActiveSyncCommand(ASV_2, "FolderSync", HIERARCHYCOMMAND));
+
+        supportedCommands.put(COMMAND_FOLDERCREATE,
+            new ActiveSyncCommand(ASV_2, "FolderChange", HIERARCHYCOMMAND));
+
+        supportedCommands.put(COMMAND_FOLDERDELETE,
+            new ActiveSyncCommand(ASV_2, "FolderChange", HIERARCHYCOMMAND));
+
+        supportedCommands.put(COMMAND_FOLDERUPDATE,
+            new ActiveSyncCommand(ASV_2, "FolderChange", HIERARCHYCOMMAND));
+
+        supportedCommands.put(COMMAND_MOVEITEMS,
+            new ActiveSyncCommand(ASV_1, "MoveItems"));
+
+        supportedCommands.put(COMMAND_GETITEMESTIMATE,
+            new ActiveSyncCommand(ASV_1, "GetItemEstimate"));
+
+        supportedCommands.put(COMMAND_MEETINGRESPONSE,
+            new ActiveSyncCommand(ASV_1, "MeetingResponse"));
+
+        supportedCommands.put(COMMAND_RESOLVERECIPIENTS,
+            new ActiveSyncCommand(ASV_1, "ResolveRecipients"));
+
+        supportedCommands.put(COMMAND_VALIDATECERT,
+            new ActiveSyncCommand(ASV_1, "ValidateCert"));
+
+        supportedCommands.put(COMMAND_PROVISION,
+            new ActiveSyncCommand(ASV_25, "Provisioning", UNAUTHENTICATED, UNPROVISIONED));
+
+        supportedCommands.put(COMMAND_SEARCH,
+            new ActiveSyncCommand(ASV_1, "Search"));
+
+        supportedCommands.put(COMMAND_PING,
+            new ActiveSyncCommand(ASV_2, "Ping", UNPROVISIONED));
+
+        supportedCommands.put(COMMAND_NOTIFY,
+            new ActiveSyncCommand(ASV_1, "Notify"));
+
+        supportedCommands.put(COMMAND_ITEMOPERATIONS,
+            new ActiveSyncCommand(ASV_12, "ItemOperations"));
+
+        supportedCommands.put(COMMAND_SETTINGS,
+            new ActiveSyncCommand(ASV_12, "Settings"));
+
+        supportedCommands.put(COMMAND_FIND,
+            new ActiveSyncCommand(ASV_161, "Find"));
+
+        supportedCommands.put(COMMAND_WEBSERVICE_DEVICE,
+            new ActiveSyncCommand(null, "Webservice", PLAININPUT, NOACTIVESYNCCOMMAND, WEBSERVICECOMMAND));
+
+        supportedCommands.put(COMMAND_WEBSERVICE_USERS,
+            new ActiveSyncCommand(null, "Webservice", PLAININPUT, NOACTIVESYNCCOMMAND, WEBSERVICECOMMAND));
+
+        supportedCommands.put(COMMAND_WEBSERVICE_INFO,
+            new ActiveSyncCommand(null, "Webservice", PLAININPUT, NOACTIVESYNCCOMMAND, WEBSERVICECOMMAND));
 
         // Initialize classes (example for Email)
         Map<Integer, Object> emailClass = new HashMap<>();
@@ -214,11 +293,8 @@ class FileStateMachine implements IStateMachine {
 
     // Request handler lookup
     public static String getRequestHandlerForCommand(int commandCode) {
-        Map<Integer, Object> cmd = supportedCommands.get(commandCode);
-        if (cmd != null && cmd.containsKey(REQUESTHANDLER)) {
-            return (String) cmd.get(REQUESTHANDLER);
-        }
-        return null;
+        ActiveSyncCommand cmd = supportedCommands.get(commandCode);
+        return (cmd != null) ? cmd.getRequestHandler() : null;
     }
 
     // Backend dynamic initialization
