@@ -24,6 +24,8 @@ package com.btactic.activesync.zpush;
 * Consult LICENSE file for details
 ************************************************/
 
+import java.util.List;
+
 public class Config {
 
     /**********************************************************************************
