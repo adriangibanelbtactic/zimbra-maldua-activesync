@@ -511,17 +511,23 @@ class FileStateMachine implements IStateMachine {
     *
     * @return String
     */
-    public static String getSupportedCommands() throws FatalNotImplementedException {
+    public static String getSupportedCommands() {
         List<String> asCommands = new ArrayList<>();
-        for (Map.Entry<Integer, Map<Integer, Object>> entry : supportedCommands.entrySet()) {
-            int code = entry.getKey();
-            Map<Integer, Object> settings = entry.getValue();
 
-            if (!checkCommandOptions(code, NOACTIVESYNCCOMMAND) &&
-                checkCommandOptions(code, getSupportedASVersion())) {
-                asCommands.add(Utils.getCommandFromCode(code));
-            }
+        for (Map.Entry<Integer, ActiveSyncCommand> entry : supportedCommands.entrySet()) {
+            int code = entry.getKey();
+            ActiveSyncCommand cmd = entry.getValue();
+
+            // Skip commands marked as NOACTIVESYNCCOMMAND
+            if (cmd.hasFlag(NOACTIVESYNCCOMMAND)) continue;
+
+            // Check if the command is supported for the current AS version
+            if (!checkCommandOptions(code, getSupportedASVersion())) continue;
+
+            // Convert code to command string and add to the list
+            asCommands.add(Utils.getCommandFromCode(code));
         }
+
         String commands = String.join(",", asCommands);
         logger.fine("Supported AS commands: " + commands);
         return "MS-ASProtocolCommands: " + commands;
