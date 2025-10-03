@@ -643,33 +643,36 @@ class FileStateMachine implements IStateMachine {
     /**
     * Checks the access types and capabilities of a command
     *
-    * @param commandCode
-    * @param option e.g. UNAUTHENTICATED, PLAININPUT, HIERARCHYCOMMAND
+    * @param commandCode Command code
+    * @param option      e.g., UNAUTHENTICATED, PLAININPUT, HIERARCHYCOMMAND, or AS version string
     * @return boolean
-    * @throws FatalNotImplementedException
+    * @throws FatalNotImplementedException if the command is not supported
     */
-    private static boolean checkCommandOptions(int commandCode, Object option) throws FatalNotImplementedException {
-        if (commandCode == 0) return false;
+    private static boolean checkCommandOptions(int commandCode, String option) throws FatalNotImplementedException {
+        if (commandCode <= 0) return false; // equivalent to PHP's $commandCode === false
 
-        if (!supportedCommands.containsKey(commandCode)) {
+        ActiveSyncCommand cmd = supportedCommands.get(commandCode);
+        if (cmd == null) {
             throw new FatalNotImplementedException(
                 String.format("Command '%s' is not supported", Utils.getCommandFromCode(commandCode))
             );
         }
 
-        Map<Integer, Object> capabilities = supportedCommands.get(commandCode);
-        boolean defaultCapability = capabilities.containsValue(option);
+        // Check if the option is in the command flags
+        if (cmd.hasFlag(option)) {
+            return true;
+        }
 
-        // if not default capability, check if command is supported since a previous AS version
-        if (!defaultCapability && supportedASVersions.contains(option)) {
-            int verIndex = supportedASVersions.indexOf(option);
-            int cmdVerIndex = supportedASVersions.indexOf(capabilities.get(0));
-            if (verIndex >= cmdVerIndex) {
-                defaultCapability = true;
+        // If option is an AS version, check if the command's version is older or equal
+        if (supportedASVersions.contains(option)) {
+            int optionIndex = supportedASVersions.indexOf(option);
+            int cmdVersionIndex = supportedASVersions.indexOf(cmd.getAsVersion());
+            if (cmd.getAsVersion() != null && cmdVersionIndex >= 0 && optionIndex >= cmdVersionIndex) {
+                return true;
             }
         }
 
-        return defaultCapability;
+        return false;
     }
 
     /**
