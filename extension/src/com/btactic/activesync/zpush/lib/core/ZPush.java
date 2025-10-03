@@ -25,6 +25,7 @@ package com.btactic.activesync.zpush.lib.core;
 
 import java.util.*;
 import java.util.logging.Logger;
+import com.btactic.activesync.zpush.lib.interface.IStateMachine;
 
 public class ZPush {
     private static final Logger logger = Logger.getLogger(ZPush.class.getName());
@@ -87,10 +88,7 @@ public class ZPush {
     public static final int COMMAND_WEBSERVICE_USERS = -101;
     public static final int COMMAND_WEBSERVICE_INFO = -102;
 
-    // TODO: Recreate IStateMachine file.
-    // Latest supported State version
-    // const STATE_VERSION = IStateMachine::STATEVERSION_02;
-    // public static final int STATE_VERSION = 2;
+    public static final String STATE_VERSION = IStateMachine.STATEVERSION_02;
 
     // Static fields
     private static List<String> autoloadBackendPreference = Arrays.asList(
