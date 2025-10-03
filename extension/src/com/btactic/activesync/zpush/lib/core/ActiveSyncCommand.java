@@ -18,7 +18,6 @@
  * Consult AGPL-3.0.txt file for details
  * ***** END LICENSE BLOCK *****
  */
-
 package com.btactic.activesync.zpush.lib.core;
 
 public class ActiveSyncCommand {
