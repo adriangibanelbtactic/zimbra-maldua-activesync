@@ -249,14 +249,6 @@ public class ZPush {
         return STATE_VERSION;
     }
 
-    // Placeholder for getBackend()
-    public static IBackend getBackend() throws FatalMisconfigurationException {
-        if (backend == null) {
-            // logic to load backend dynamically
-        }
-        return backend;
-    }
-
 // Exceptions
 class FatalMisconfigurationException extends Exception {
     public FatalMisconfigurationException(String message) { super(message); }
@@ -335,27 +327,15 @@ class FileStateMachine implements IStateMachine {
         return (cmd != null) ? cmd.getRequestHandler() : null;
     }
 
-    // Backend dynamic initialization
+    // Please note that this was originally dynamically loaded
+    // Backend hard-coded initialization
     public static IBackend getBackend() throws FatalMisconfigurationException {
         if (backend == null) {
-            for (String className : autoloadBackendPreference) {
-                try {
-                    Class<?> clazz = Class.forName("com.example.zpush.backend." + className);
-                    Object instance = clazz.getDeclaredConstructor().newInstance();
-                    if (instance instanceof IBackend) {
-                        backend = (IBackend) instance;
-                        logger.info("Loaded backend: " + className);
-                        break;
-                    }
-                } catch (ClassNotFoundException e) {
-                    logger.warning("Backend class not found: " + className);
-                } catch (Exception e) {
-                    throw new FatalMisconfigurationException("Failed to initialize backend: " + e.getMessage());
-                }
-            }
-
-            if (backend == null) {
-                throw new FatalMisconfigurationException("No suitable backend found.");
+            try {
+                backend = new BackendZimbra();
+                logger.info("Loaded backend: BackendZimbra");
+            } catch (Exception e) {
+                throw new FatalMisconfigurationException("Failed to initialize backend: " + e.getMessage());
             }
         }
         return backend;
