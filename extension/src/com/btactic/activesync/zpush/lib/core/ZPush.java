@@ -26,6 +26,7 @@ package com.btactic.activesync.zpush.lib.core;
 import java.util.*;
 import java.util.logging.Logger;
 import com.btactic.activesync.zpush.lib.interfaces.IStateMachine;
+import com.btactic.activesync.zpush.lib.syncobjects.SyncFolder;
 
 public class ZPush {
     private static final Logger logger = Logger.getLogger(ZPush.class.getName());
